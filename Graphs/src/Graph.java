@@ -7,44 +7,61 @@
 import java.util.*;
 import java.io.*;
 
-public class Graph
+public class Graph<T extends Comparable<T>>
 {
-	private boolean [][] matrix;
+	private HashMap<T, HashMap<T, Integer>> list;
+	
 	private int size;
+	
+	public Graph()
+	{
+		 this.list = new HashMap<T, HashMap<T, Integer>>();
+		 this.size = 0;
+	}
 	
 	public Graph(String filename)
 	{
-		try
-		{
-			Scanner s = new Scanner(new File(filename));
-			int size = s.nextInt();
-			matrix = new boolean[size][size];
-			
-			for (int i = 0; i < size; i++)
-				for (int j = 0; j < size; j++)
-					matrix[i][j] = (s.nextInt() != 0);
-					
-		}
-		catch(FileNotFoundException e)
-		{
+		// TODO: File read.
+		this();
+	}
+
+	public HashMap<T, HashMap<T, Integer>> getList()
+	{
+		return list;
+	}
+	
+	public Set<T> getVertices()
+	{
+		return list.keySet();
+	}
+	
+	// This method adds a new vertex to the Graph, as long as there is not already a vertex
+	// with the given name.
+	public void addVertex(T name)
+	{
+		if (list.containsKey(name))
 			return;
+		
+		list.put(name, new HashMap<T, Integer>());
+	}
+	
+	// This method creates an edge from vertex start to vertex end with the given weight
+	// (unless an edge already exists between them). If directed is false, then an edge
+	// is also added from end to start (if there is not already an edge).
+	public void addEdge(T start, T end, Integer weight, boolean directed)
+	{
+		if (directed == false)
+		{
+			this.addEdge(start, end, weight, true);
+			this.addEdge(end, start, weight, true);
 		}
-	}
-	
-	public void depthFirstSearch(int start)
-	{
-		boolean [] visited = new boolean[this.size];
-		depthFirstSearch(start, visited);
-		
-	}
-	
-	private void depthFirstSearch(int start, boolean [] visited)
-	{
-		visited[start] = true;
-		System.out.println(start);
-		
-		for (int i = 0; i < this.size; i++)
-			if (matrix[start][i] && !visited[i])
-				depthFirstSearch(i, visited);
+		else
+		{
+			HashMap<T, Integer> startList = this.list.get(start);
+			if (startList.containsKey(end))
+				return;
+			
+			startList.put(end, weight);
+		}
 	}
 }
