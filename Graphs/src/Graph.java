@@ -37,14 +37,33 @@ public class Graph<T extends Comparable<T>>
 		return this.list.keySet();
 	}
 	
+	public boolean containsVertex(T name)
+	{
+		if (this.list.containsKey(name))
+			return true;
+		
+		return false;
+	}
+	
 	// This method adds a new vertex to the Graph, as long as there is not already a vertex
 	// with the given name.
 	public void addVertex(T name)
 	{
-		if (this.list.containsKey(name))
+		if (this.containsVertex(name))
 			return;
 		
 		this.list.put(name, new HashMap<T, Integer>());
+	}
+	
+	public void removeVertex(T name)
+	{
+		Set<Entry<T, HashMap<T, Integer>>> vertices = this.list.entrySet();
+		for (Entry vertex : vertices)
+		{
+			((HashMap<T, Integer>) vertex.getValue()).remove(name);
+		}
+		
+		this.list.remove(name);
 	}
 	
 	// This method creates an edge from vertex start to vertex end with the given weight
@@ -156,6 +175,10 @@ public class Graph<T extends Comparable<T>>
 	public static void main(String [] args)
 	{
 		Graph<Integer> g = Graph.randomUndirectedGraph(5, 0.5, 1, 4);
+		
+		g.print();
+		
+		g.removeVertex(0);
 		
 		g.print();
 	}
