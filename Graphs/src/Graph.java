@@ -31,6 +31,11 @@ public class Graph<T extends Comparable<T>>
 		return this.list;
 	}
 	
+	public int getSize()
+	{
+		return this.size;
+	}
+	
 	// This method returns a set containing the vertices in the graph.
 	public Set<T> getVertices()
 	{
@@ -53,6 +58,7 @@ public class Graph<T extends Comparable<T>>
 			return;
 		
 		this.list.put(name, new HashMap<T, Integer>());
+		this.size++;
 	}
 	
 	public void removeVertex(T name)
@@ -64,6 +70,14 @@ public class Graph<T extends Comparable<T>>
 		}
 		
 		this.list.remove(name);
+	}
+	
+	public HashMap<T, Integer> getEdges(T name)
+	{
+		if (!this.containsVertex(name))
+			return null;
+		
+		return this.list.get(name);
 	}
 	
 	// This method creates an edge from vertex start to vertex end with the given weight
@@ -82,6 +96,39 @@ public class Graph<T extends Comparable<T>>
 			return;
 		
 		startList.put(end, weight);
+	}
+	
+	public ArrayList<T> depthFirstTraversal(T start)
+	{
+		HashSet<T> visited = new HashSet<T>();
+		ArrayList<T> traversal = new ArrayList<T>(this.getSize());
+		Stack<T> s = new Stack<T>();
+		int count = 0;
+		
+		for (int i = 0; i < this.getSize(); i++)
+			traversal.add(null);
+		
+		visited.add(start);
+		s.push(start);
+		
+		while(!s.isEmpty())
+		{
+			T vertex = s.pop();
+			traversal.set(count, vertex);
+			count++;
+			
+			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
+			for (Entry<T, Integer> edge : edgeMap.entrySet())
+			{
+				if (!visited.contains(edge.getKey()))
+				{
+					visited.add(edge.getKey());
+					s.push(edge.getKey());
+				}
+			}
+		}
+		
+		return traversal;
 	}
 	
 	public static Integer generateRandomInteger(int min, int max)
@@ -139,12 +186,23 @@ public class Graph<T extends Comparable<T>>
 	// The runtime for this method is O(|V|+|E|)
 	public void print()
 	{
-		Set<Entry<T, HashMap<T, Integer>>> vertices = this.list.entrySet();
+		/*Set<Entry<T, HashMap<T, Integer>>> vertices = this.list.entrySet();
 		for (Entry vertex : vertices)
 		{
 			System.out.println(vertex.getKey());
 			Set<Entry<T, Integer>> edges = ((HashMap<T, Integer>) vertex.getValue()).entrySet();
 			for (Entry edge : edges)
+			{
+				System.out.println("   -> (" + edge.getKey() + ", " + edge.getValue() + ")");
+			}
+		}*/
+		
+		ArrayList<T> vertices = new ArrayList<T>(this.getVertices());
+		for (T vertex : vertices)
+		{
+			System.out.println(vertex);
+			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
+			for (Entry<T, Integer> edge : edgeMap.entrySet())
 			{
 				System.out.println("   -> (" + edge.getKey() + ", " + edge.getValue() + ")");
 			}
@@ -157,12 +215,12 @@ public class Graph<T extends Comparable<T>>
 	// The runtime for this method is O(|V|log(|V|) + |E|log(|E|))
 	public void printSorted()
 	{
-		ArrayList<T> vertices = new ArrayList<T>(this.list.keySet());
+		ArrayList<T> vertices = new ArrayList<T>(this.getVertices());
 		Collections.sort(vertices);
 		for (T vertex : vertices)
 		{
 			System.out.println(vertex);
-			HashMap<T, Integer> edgeMap = this.list.get(vertex);
+			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
 			ArrayList<T> edges = new ArrayList<T>(edgeMap.keySet());
 			Collections.sort(edges);
 			for (T edge : edges)
@@ -178,8 +236,9 @@ public class Graph<T extends Comparable<T>>
 		
 		g.print();
 		
-		g.removeVertex(0);
+		ArrayList<Integer> traversal = g.depthFirstTraversal(0);
 		
-		g.print();
+		for (int i = 0; i < traversal.size(); i++)
+			System.out.println(traversal.get(i));
 	}
 }
