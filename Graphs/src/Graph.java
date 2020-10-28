@@ -101,12 +101,8 @@ public class Graph<T extends Comparable<T>>
 	public ArrayList<T> depthFirstTraversal(T start)
 	{
 		HashSet<T> visited = new HashSet<T>();
-		ArrayList<T> traversal = new ArrayList<T>(this.getSize());
+		ArrayList<T> traversal = new ArrayList<T>();
 		Stack<T> s = new Stack<T>();
-		int count = 0;
-		
-		for (int i = 0; i < this.getSize(); i++)
-			traversal.add(null);
 		
 		visited.add(start);
 		s.push(start);
@@ -114,8 +110,7 @@ public class Graph<T extends Comparable<T>>
 		while(!s.isEmpty())
 		{
 			T vertex = s.pop();
-			traversal.set(count, vertex);
-			count++;
+			traversal.add(vertex);
 			
 			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
 			for (Entry<T, Integer> edge : edgeMap.entrySet())
@@ -124,6 +119,34 @@ public class Graph<T extends Comparable<T>>
 				{
 					visited.add(edge.getKey());
 					s.push(edge.getKey());
+				}
+			}
+		}
+		
+		return traversal;
+	}
+	
+	public ArrayList<T> breadthFirstTraversal(T start)
+	{
+		HashSet<T> visited = new HashSet<T>();
+		ArrayList<T> traversal = new ArrayList<T>();
+		Queue<T> q = new LinkedList<T>();
+		
+		visited.add(start);
+		q.add(start);
+		
+		while(!q.isEmpty())
+		{
+			T vertex = q.remove();
+			traversal.add(vertex);
+			
+			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
+			for (Entry<T, Integer> edge : edgeMap.entrySet())
+			{
+				if (!visited.contains(edge.getKey()))
+				{
+					visited.add(edge.getKey());
+					q.add(edge.getKey());
 				}
 			}
 		}
@@ -232,13 +255,13 @@ public class Graph<T extends Comparable<T>>
 	
 	public static void main(String [] args)
 	{
-		Graph<Integer> g = Graph.randomUndirectedGraph(5, 0.5, 1, 4);
+		Graph<Integer> g = Graph.randomUndirectedGraph(10, 0.3, 1, 4);
 		
 		g.print();
 		
 		ArrayList<Integer> traversal = g.depthFirstTraversal(0);
 		
 		for (int i = 0; i < traversal.size(); i++)
-			System.out.println(traversal.get(i));
+			System.out.print(traversal.get(i) + " ");
 	}
 }
