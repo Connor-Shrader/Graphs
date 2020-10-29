@@ -178,6 +178,27 @@ public class Graph<T extends Comparable<T>>
 		return g;
 	}
 	
+	public int countConnectedComponents()
+	{
+		HashSet<T> visited = new HashSet<T>();
+		ArrayList<T> traversal = new ArrayList<T>();
+		Set<T> vertices = this.getVertices();
+		int count = 0;
+		
+		for (T vertex : vertices)
+		{
+			if (visited.contains(vertex))
+				continue;
+			
+			count++;
+			traversal = this.depthFirstTraversal(vertex);
+			for (int i = 0; i < traversal.size(); i++)
+				visited.add(traversal.get(i));
+		}
+		
+		return count;
+	}
+	
 	// This method generates a random directed graph with a given number of vertices. The graph
 	// uses the Integer type. The parameter edgeDensity dictates the probability that
 	// any possible edge will be included in the graph. The weight of each edge
@@ -263,5 +284,7 @@ public class Graph<T extends Comparable<T>>
 		
 		for (int i = 0; i < traversal.size(); i++)
 			System.out.print(traversal.get(i) + " ");
+		
+		System.out.println(g.countConnectedComponents());
 	}
 }
