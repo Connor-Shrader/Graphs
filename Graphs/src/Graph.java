@@ -1,7 +1,7 @@
 // Graph.java
 // Connor Shrader
 
-// Implementation of a graph using adjacency matrices.
+// Implementation of a graph using adjacency map.
 // This class was made based on information in my Computer Science 2 class.
 
 import java.util.*;
@@ -10,25 +10,33 @@ import java.io.*;
 
 public class Graph<T extends Comparable<T>>
 {
-	private HashMap<T, HashMap<T, Integer>> list;
+	// This HashMap associates names for each vertex with another HashMap.
+	// Each smaller HashMap contains the vertices that the original vertex is
+	// adjacent to, as well as an Integer representing the weight of that edge.
+	private HashMap<T, HashMap<T, Integer>> map;
 	
+	// The size of a Graph is the number of vertices.
 	private int size;
 	
+	// Default constructor that initializes map but does not add any
+	// vertices or edges.
 	public Graph()
 	{
-		 this.list = new HashMap<T, HashMap<T, Integer>>();
+		 this.map = new HashMap<T, HashMap<T, Integer>>();
 		 this.size = 0;
 	}
 	
+	// This constructor reads a graph from a text file.
 	public Graph(String filename)
 	{
 		// TODO: File read.
 		this();
 	}
 
-	public HashMap<T, HashMap<T, Integer>> getList()
+	// This method returns the map variable.
+	public HashMap<T, HashMap<T, Integer>> getMap()
 	{
-		return this.list;
+		return this.map;
 	}
 	
 	public int getSize()
@@ -37,17 +45,33 @@ public class Graph<T extends Comparable<T>>
 	}
 	
 	// This method returns a set containing the vertices in the graph.
-	public Set<T> getVertices()
+	public ArrayList<T> getVertices()
 	{
-		return this.list.keySet();
+		return new ArrayList<T>(this.map.keySet());
+	}
+	
+	public HashMap<T, Integer> getEdges(T name)
+	{
+		if (!this.containsVertex(name))
+			return null;
+		
+		return this.map.get(name);
 	}
 	
 	public boolean containsVertex(T name)
 	{
-		if (this.list.containsKey(name))
+		if (this.map.containsKey(name))
 			return true;
 		
 		return false;
+	}
+	
+	public boolean containsEdge(T start, T end)
+	{
+		if (!this.containsVertex(start) || !this.containsVertex(end))
+			return false;
+		
+		return this.getEdges(start).containsKey(end);
 	}
 	
 	// This method adds a new vertex to the Graph, as long as there is not already a vertex
@@ -57,32 +81,27 @@ public class Graph<T extends Comparable<T>>
 		if (this.containsVertex(name))
 			return;
 		
-		this.list.put(name, new HashMap<T, Integer>());
+		this.map.put(name, new HashMap<T, Integer>());
 		this.size++;
 	}
 	
 	public void removeVertex(T name)
 	{
-		Set<Entry<T, HashMap<T, Integer>>> vertices = this.list.entrySet();
-		for (Entry vertex : vertices)
+		ArrayList<T> vertices = this.getVertices();
+		
+		if (!this.containsVertex(name))
+			return;
+		
+		for (T vertex : vertices)
 		{
-			((HashMap<T, Integer>) vertex.getValue()).remove(name);
+			this.removeUndirectedEdge(name, vertex);
 		}
 		
-		this.list.remove(name);
+		this.removeVertex(name);
 	}
 	
-	public HashMap<T, Integer> getEdges(T name)
-	{
-		if (!this.containsVertex(name))
-			return null;
-		
-		return this.list.get(name);
-	}
-	
-	// This method creates an edge from vertex start to vertex end with the given weight
-	// (unless an edge already exists between them). If directed is false, then an edge
-	// is also added from end to start (if there is not already an edge).
+	// This method creates an edge between vertices start and end, as well
+	// as an edge between end and start.
 	public void addUndirectedEdge(T start, T end, Integer weight)
 	{
 		this.addDirectedEdge(start, end, weight);
@@ -91,11 +110,30 @@ public class Graph<T extends Comparable<T>>
 	
 	public void addDirectedEdge(T start, T end, Integer weight)
 	{
-		HashMap<T, Integer> startList = this.list.get(start);
-		if (startList.containsKey(end))
+		HashMap<T, Integer> startMap = this.map.get(start);
+		if (startMap.containsKey(end))
 			return;
 		
-		startList.put(end, weight);
+		startMap.put(end, weight);
+	}
+	
+	// This method removes any edges between start and end.
+	// Note that this method will remove both edges between the vertices
+	// regardless of whether those edges were made using addUndirectedEdges
+	// or addDirectedEdges. It will also remove both edges even if the weights
+	// differ.
+	public void removeUndirectedEdge(T start, T end)
+	{
+		this.removeDirectedEdge(start, end);
+		this.removeDirectedEdge(end, start);
+	}
+	
+	public void removeDirectedEdge(T start, T end)
+	{
+		if (!this.containsVertex(start) || !this.containsVertex(end))
+			return;
+		
+		this.getEdges(start).remove(end);
 	}
 	
 	public ArrayList<T> depthFirstTraversal(T start)
@@ -230,7 +268,7 @@ public class Graph<T extends Comparable<T>>
 	// The runtime for this method is O(|V|+|E|)
 	public void print()
 	{
-		/*Set<Entry<T, HashMap<T, Integer>>> vertices = this.list.entrySet();
+		/*Set<Entry<T, HashMap<T, Integer>>> vertices = this.map.entrySet();
 		for (Entry vertex : vertices)
 		{
 			System.out.println(vertex.getKey());
