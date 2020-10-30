@@ -39,6 +39,7 @@ public class Graph<T extends Comparable<T>>
 		return this.map;
 	}
 	
+	// This method returns the number of vertices in the graph.
 	public int getSize()
 	{
 		return this.size;
@@ -50,6 +51,8 @@ public class Graph<T extends Comparable<T>>
 		return new ArrayList<T>(this.map.keySet());
 	}
 	
+	// This method takes a vertex as a parameter and returns a HashMap
+	// containing all the vertices that the parameter is adjacent to.
 	public HashMap<T, Integer> getEdges(T name)
 	{
 		if (!this.containsVertex(name))
