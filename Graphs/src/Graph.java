@@ -52,14 +52,25 @@ public class Graph<T extends Comparable<T>>
 	}
 	
 	// This method takes 'vertex' as a parameter and returns a HashMap
-	// containing all the vertices that 'vertex' is adjacent to.
+	// mapping all the vertices that 'vertex' is adjacent to the edge's weight.
 	// If the 'vertex' is not in the graph, the method returns null.
-	public HashMap<T, Integer> getEdges(T vertex)
+	public HashMap<T, Integer> getEdgeMap(T vertex)
 	{
 		if (!this.containsVertex(vertex))
 			return null;
 		
 		return this.map.get(vertex);
+	}
+	
+	// This method takes 'vertex' as a parameter and returns an ArrayList
+	// containing all the vertices that 'vertex' is adjacent to.
+	// If the 'vertex' is not in the graph, the method returns null.
+	public ArrayList<T> getEdgeList(T vertex)
+	{
+		if (!this.containsVertex(vertex))
+			return null;
+		
+		return new ArrayList<T>(this.getEdgeMap(vertex).keySet());
 	}
 	
 	// This method returns true if the graph contains
@@ -80,7 +91,7 @@ public class Graph<T extends Comparable<T>>
 		if (!this.containsVertex(start) || !this.containsVertex(end))
 			return false;
 		
-		return this.getEdges(start).containsKey(end);
+		return this.getEdgeList(start).contains(end);
 	}
 	
 	// This method adds a new vertex to the Graph, as long as there is not already a vertex
@@ -147,7 +158,7 @@ public class Graph<T extends Comparable<T>>
 		if (!this.containsVertex(start) || !this.containsVertex(end))
 			return;
 		
-		this.getEdges(start).remove(end);
+		this.getEdgeMap(start).remove(end);
 	}
 	
 	// This method inputs a vertex 'start' and performs an iterative depth-first traversal
@@ -169,13 +180,13 @@ public class Graph<T extends Comparable<T>>
 			T vertex = s.pop();
 			traversal.add(vertex);
 			
-			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
-			for (Entry<T, Integer> edge : edgeMap.entrySet())
+			ArrayList<T> edges = this.getEdgeList(vertex);
+			for (T edge : edges)
 			{
-				if (!visited.contains(edge.getKey()))
+				if (!visited.contains(edge))
 				{
-					visited.add(edge.getKey());
-					s.push(edge.getKey());
+					visited.add(edge);
+					s.push(edge);
 				}
 			}
 		}
@@ -202,18 +213,40 @@ public class Graph<T extends Comparable<T>>
 			T vertex = q.remove();
 			traversal.add(vertex);
 			
-			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
-			for (Entry<T, Integer> edge : edgeMap.entrySet())
+			ArrayList<T> edges = this.getEdgeList(vertex);
+			for (T edge : edges)
 			{
-				if (!visited.contains(edge.getKey()))
+				if (!visited.contains(edge))
 				{
-					visited.add(edge.getKey());
-					q.add(edge.getKey());
+					visited.add(edge);
+					q.add(edge);
 				}
 			}
 		}
 		
 		return traversal;
+	}
+	
+	// This method counts the number of connected components in the graph.
+	public int countConnectedComponents()
+	{
+		HashSet<T> visited = new HashSet<T>();
+		ArrayList<T> traversal = new ArrayList<T>();
+		ArrayList<T> vertices = this.getVertices();
+		int count = 0;
+		
+		for (T vertex : vertices)
+		{
+			if (visited.contains(vertex))
+				continue;
+			
+			count++;
+			traversal = this.depthFirstTraversal(vertex);
+			for (int i = 0; i < traversal.size(); i++)
+				visited.add(traversal.get(i));
+		}
+		
+		return count;
 	}
 	
 	// This method generates a random integer between 'min' and 'max', inclusive.
@@ -239,28 +272,6 @@ public class Graph<T extends Comparable<T>>
 					g.addUndirectedEdge(i, j, generateRandomInteger(minWeight, maxWeight));
 		
 		return g;
-	}
-	
-	// This method counts the number of connected components in the graph.
-	public int countConnectedComponents()
-	{
-		HashSet<T> visited = new HashSet<T>();
-		ArrayList<T> traversal = new ArrayList<T>();
-		ArrayList<T> vertices = this.getVertices();
-		int count = 0;
-		
-		for (T vertex : vertices)
-		{
-			if (visited.contains(vertex))
-				continue;
-			
-			count++;
-			traversal = this.depthFirstTraversal(vertex);
-			for (int i = 0; i < traversal.size(); i++)
-				visited.add(traversal.get(i));
-		}
-		
-		return count;
 	}
 	
 	// This method generates a random directed graph with a given number of vertices. The graph
@@ -309,7 +320,7 @@ public class Graph<T extends Comparable<T>>
 		for (T vertex : vertices)
 		{
 			System.out.println(vertex);
-			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
+			HashMap<T, Integer> edgeMap = this.getEdgeMap(vertex);
 			for (Entry<T, Integer> edge : edgeMap.entrySet())
 			{
 				System.out.println("   -> (" + edge.getKey() + ", " + edge.getValue() + ")");
@@ -328,7 +339,7 @@ public class Graph<T extends Comparable<T>>
 		for (T vertex : vertices)
 		{
 			System.out.println(vertex);
-			HashMap<T, Integer> edgeMap = this.getEdges(vertex);
+			HashMap<T, Integer> edgeMap = this.getEdgeMap(vertex);
 			ArrayList<T> edges = new ArrayList<T>(edgeMap.keySet());
 			Collections.sort(edges);
 			for (T edge : edges)
