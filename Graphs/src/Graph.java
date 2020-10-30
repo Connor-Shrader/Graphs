@@ -129,7 +129,7 @@ public class Graph<T extends Comparable<T>>
 		startMap.put(end, weight);
 	}
 	
-	// This method removes any edges between start and end.
+	// This method removes any edges between 'start' and 'end'.
 	// Note that this method will remove both edges between the vertices
 	// regardless of whether those edges were made using addUndirectedEdges
 	// or addDirectedEdges. It will also remove both edges even if the weights
@@ -140,6 +140,8 @@ public class Graph<T extends Comparable<T>>
 		this.removeDirectedEdge(end, start);
 	}
 	
+	// This method removes an edge between 'start' and 'end', if one exists.
+	// If there is also an edge from 'end' to 'start', it is not altered or deleted.
 	public void removeDirectedEdge(T start, T end)
 	{
 		if (!this.containsVertex(start) || !this.containsVertex(end))
@@ -148,6 +150,11 @@ public class Graph<T extends Comparable<T>>
 		this.getEdges(start).remove(end);
 	}
 	
+	// This method inputs a vertex 'start' and performs an iterative depth-first traversal
+	// of the graph. This method returns an ArrayList<T> containing every vertex
+	// reached by the traversal in the order that they were visited.
+	// This method will traverse the connected component that 'start' is in, but
+	// it will not traverse the entire graph if the graph is disconnected.
 	public ArrayList<T> depthFirstTraversal(T start)
 	{
 		HashSet<T> visited = new HashSet<T>();
@@ -176,6 +183,11 @@ public class Graph<T extends Comparable<T>>
 		return traversal;
 	}
 	
+	// This method inputs a vertex 'start' and performs an iterative breadth-first traversal
+	// of the graph. This method returns an ArrayList<T> containing every vertex
+	// reached by the traversal in the order that they were visited.
+	// This method will traverse the connected component that 'start' is in, but
+	// it will not traverse the entire graph if the graph is disconnected.
 	public ArrayList<T> breadthFirstTraversal(T start)
 	{
 		HashSet<T> visited = new HashSet<T>();
@@ -204,6 +216,7 @@ public class Graph<T extends Comparable<T>>
 		return traversal;
 	}
 	
+	// This method generates a random integer between 'min' and 'max', inclusive.
 	public static Integer generateRandomInteger(int min, int max)
 	{
 		return min + (int)(Math.random() * (max - min + 1));
@@ -228,11 +241,12 @@ public class Graph<T extends Comparable<T>>
 		return g;
 	}
 	
+	// This method counts the number of connected components in the graph.
 	public int countConnectedComponents()
 	{
 		HashSet<T> visited = new HashSet<T>();
 		ArrayList<T> traversal = new ArrayList<T>();
-		Set<T> vertices = this.getVertices();
+		ArrayList<T> vertices = this.getVertices();
 		int count = 0;
 		
 		for (T vertex : vertices)
