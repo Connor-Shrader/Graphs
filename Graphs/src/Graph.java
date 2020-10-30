@@ -51,24 +51,30 @@ public class Graph<T extends Comparable<T>>
 		return new ArrayList<T>(this.map.keySet());
 	}
 	
-	// This method takes a vertex as a parameter and returns a HashMap
-	// containing all the vertices that the parameter is adjacent to.
-	public HashMap<T, Integer> getEdges(T name)
+	// This method takes 'vertex' as a parameter and returns a HashMap
+	// containing all the vertices that 'vertex' is adjacent to.
+	// If the 'vertex' is not in the graph, the method returns null.
+	public HashMap<T, Integer> getEdges(T vertex)
 	{
-		if (!this.containsVertex(name))
+		if (!this.containsVertex(vertex))
 			return null;
 		
-		return this.map.get(name);
+		return this.map.get(vertex);
 	}
 	
-	public boolean containsVertex(T name)
+	// This method returns true if the graph contains
+	// 'vertex', and false otherwise.
+	public boolean containsVertex(T vertex)
 	{
-		if (this.map.containsKey(name))
+		if (this.map.containsKey(vertex))
 			return true;
 		
 		return false;
 	}
 	
+	// This method returns true if there is an edge from 'start' to 'end
+	// in the graph, and false if there is not an edge. If either 'start'
+	// or 'end' is not in the graph, this method returns false.
 	public boolean containsEdge(T start, T end)
 	{
 		if (!this.containsVertex(start) || !this.containsVertex(end))
@@ -79,38 +85,41 @@ public class Graph<T extends Comparable<T>>
 	
 	// This method adds a new vertex to the Graph, as long as there is not already a vertex
 	// with the given name.
-	public void addVertex(T name)
+	public void addVertex(T vertex)
 	{
-		if (this.containsVertex(name))
+		if (this.containsVertex(vertex))
 			return;
 		
-		this.map.put(name, new HashMap<T, Integer>());
+		this.map.put(vertex, new HashMap<T, Integer>());
 		this.size++;
 	}
 	
-	public void removeVertex(T name)
+	// This method removes 'vertex' from the graph, as well as all
+	// edges associated with 'vertex'.
+	public void removeVertex(T vertex)
 	{
 		ArrayList<T> vertices = this.getVertices();
 		
-		if (!this.containsVertex(name))
+		if (!this.containsVertex(vertex))
 			return;
 		
-		for (T vertex : vertices)
+		for (T start : vertices)
 		{
-			this.removeUndirectedEdge(name, vertex);
+			this.removeUndirectedEdge(start, vertex);
 		}
 		
-		this.removeVertex(name);
+		this.removeVertex(vertex);
 	}
 	
-	// This method creates an edge between vertices start and end, as well
-	// as an edge between end and start.
+	// This method creates an edge with a given weight from
+	// 'start' to 'end', as well as an edge from end to start.
 	public void addUndirectedEdge(T start, T end, Integer weight)
 	{
 		this.addDirectedEdge(start, end, weight);
 		this.addDirectedEdge(end, start, weight);
 	}
 	
+	// This method creates an edge from 'start' to 'end with the given weight.
 	public void addDirectedEdge(T start, T end, Integer weight)
 	{
 		HashMap<T, Integer> startMap = this.map.get(start);
