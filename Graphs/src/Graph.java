@@ -8,6 +8,42 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.io.*;
 
+class Vertex<T> implements Comparable
+{
+	T key;
+	Integer value;
+	
+	Vertex(T key, Integer value)
+	{
+		this.key = key;
+		this.value = value;
+	}
+
+	@Override
+	public int compareTo(Object v)
+	{
+		try {
+			if (v instanceof Vertex<?>)
+			{
+				if (this.value == null)
+				{
+					return 1;
+				}
+				else if (((Vertex<T>) v).value == null)
+				{
+					return -1;
+				}
+				return this.value - ((Vertex<T>) v).value;
+			}
+			return 1;
+		}
+		catch (Exception e)
+		{
+			return 1;
+		}
+	}
+}
+
 public class Graph<T extends Comparable<T>>
 {
 	// This HashMap associates names for each vertex with another HashMap.
@@ -312,6 +348,55 @@ public class Graph<T extends Comparable<T>>
 		return traversal;
 	}
 	
+	public HashMap<T, T> runDijkstra(T start)
+	{
+		int oo = (int)1e9;
+		ArrayList<T> vertices = this.getVertices();
+		HashMap<T, Integer> dist = new HashMap<T, Integer>();
+		HashMap<T, T> prevVertex = new HashMap<T, T>();
+		HashSet<T> visited = new HashSet<T>();
+		PriorityQueue<Vertex<T>> q = new PriorityQueue<Vertex<T>>();
+		
+		for (T vertex : vertices)
+		{
+			dist.put(vertex, oo);
+			q.add(new Vertex<T>(vertex, oo));
+		}
+		
+		q.add(new Vertex<T>(start, 0));
+		
+		while (!q.isEmpty())
+		{
+			Vertex<T> vertex = q.remove();
+			System.out.println ("Just pulled " + vertex.key + " from the queue.");
+			if (visited.contains(vertex.key))
+				continue;
+			
+			System.out.println("It is not already visited.");
+			
+			visited.add(vertex.key);
+			
+			HashMap<T, Integer> edgeMap = this.getEdgeMap(vertex.key);
+			for (Entry<T, Integer> edge : edgeMap.entrySet())
+			{
+				System.out.println("\tLooking at the edge to " + edge.getKey());
+				System.out.println("\tEdge weight = " + edge.getValue() + ", Vertex value = " + vertex.value);
+				int pathWeight = edge.getValue() + vertex.value;
+				if (!visited.contains(edge.getKey()))
+				{
+					if (dist.get(edge.getKey()) != null && pathWeight < dist.get(edge.getKey()))
+					{
+						dist.put(edge.getKey(), pathWeight);
+						prevVertex.put(edge.getKey(), vertex.key);
+						q.add(new Vertex<T>(edge.getKey(), pathWeight));
+					}
+				}
+			}
+		}
+		
+		return prevVertex;
+	}
+	
 	// This method generates a random integer between 'min' and 'max', inclusive.
 	public static Integer generateRandomInteger(int min, int max)
 	{
@@ -350,7 +435,7 @@ public class Graph<T extends Comparable<T>>
 		
 		for (int i = 0; i < vertices; i++)
 			for (int j = 0; j < vertices; j++)
-				if (edgeDensity > Math.random())
+				if (edgeDensity > Math.random() && i != j)
 					g.addDirectedEdge(i, j, generateRandomInteger(minWeight, maxWeight));
 		
 		return g;
@@ -414,21 +499,15 @@ public class Graph<T extends Comparable<T>>
 	
 	public static void main(String [] args)
 	{
-		Graph<Integer> g = new Graph();
+		Graph<Integer> g = Graph.randomDirectedGraph(10, 0.25, 1, 10);
 		
-		for (int i = 1; i <= 10; i++)
-			g.addVertex(i);
+		g.print();
 		
-		g.addDirectedEdge(1, 2, 1);
-		g.addDirectedEdge(2, 3, 1);
-		g.addDirectedEdge(3, 1, 1);
+		HashMap<Integer, Integer> dijkstra = g.runDijkstra(0);
 		
-		ArrayList<Integer> sort = g.topologicalSort();
-		
-		if (sort != null)
-			for (Integer vertex : sort)
-			{
-				System.out.print(vertex + " ");
-			}
+		for (Entry<Integer, Integer> pair : dijkstra.entrySet())
+		{
+			System.out.println(pair.getValue() + " -> " + pair.getKey());
+		}
 	}
 }
