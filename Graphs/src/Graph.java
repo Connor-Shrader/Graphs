@@ -249,6 +249,69 @@ public class Graph<T extends Comparable<T>>
 		return count;
 	}
 	
+	// This method returns an ArrayList representing a valid topological sort
+	// of the graph. The method returns null if there is no valid topological
+	// sort.
+	public ArrayList<T> topologicalSort()
+	{
+		ArrayList<T> vertices = this.getVertices();
+		ArrayList<T> traversal = new ArrayList<T>();
+		HashMap<T, Integer> incomingEdges = new HashMap<T, Integer>();
+		Queue<T> q = new LinkedList<T>();
+		int count = 0;
+		
+		// Initialize all vertices to have zero incoming edges.
+		for (T vertex : vertices)
+		{
+			incomingEdges.put(vertex, 0);
+		}
+		
+		// Calculate the number of incoming edges for all vertices.
+		for (T vertex : vertices)
+		{
+			ArrayList<T> edges = this.getEdgeList(vertex);
+			for (T edge : edges)
+			{
+				incomingEdges.put(edge, incomingEdges.get(edge) + 1);
+			}
+		}
+		
+		// Put all vertices with 0 incoming edges into the queue.
+		for (T vertex : vertices)
+		{
+			if (incomingEdges.get(vertex) == 0)
+			{
+				q.add(vertex);
+			}
+		}
+		
+		// Compute the topological sort.
+		while(!q.isEmpty())
+		{
+			T vertex = q.remove();
+			traversal.add(vertex);
+			count++;
+			
+			ArrayList<T> edges = this.getEdgeList(vertex);
+			for (T edge : edges)
+			{
+				if (incomingEdges.put(edge, incomingEdges.get(edge) - 1) - 1 == 0)
+				{
+					q.add(edge);
+				}
+			}
+		}
+		
+		// If not all vertices were traversed, there is a cycle and
+		// no valid topological sort exists.
+		if (count != this.getSize())
+		{
+			return null;
+		}
+		
+		return traversal;
+	}
+	
 	// This method generates a random integer between 'min' and 'max', inclusive.
 	public static Integer generateRandomInteger(int min, int max)
 	{
@@ -351,15 +414,21 @@ public class Graph<T extends Comparable<T>>
 	
 	public static void main(String [] args)
 	{
-		Graph<Integer> g = Graph.randomUndirectedGraph(10, 0.3, 1, 4);
+		Graph<Integer> g = new Graph();
 		
-		g.print();
+		for (int i = 1; i <= 10; i++)
+			g.addVertex(i);
 		
-		ArrayList<Integer> traversal = g.depthFirstTraversal(0);
+		g.addDirectedEdge(1, 2, 1);
+		g.addDirectedEdge(2, 3, 1);
+		g.addDirectedEdge(3, 1, 1);
 		
-		for (int i = 0; i < traversal.size(); i++)
-			System.out.print(traversal.get(i) + " ");
+		ArrayList<Integer> sort = g.topologicalSort();
 		
-		System.out.println(g.countConnectedComponents());
+		if (sort != null)
+			for (Integer vertex : sort)
+			{
+				System.out.print(vertex + " ");
+			}
 	}
 }
