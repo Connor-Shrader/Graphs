@@ -6,9 +6,8 @@
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.io.*;
 
-class Vertex<T> implements Comparable
+class Vertex<T> implements Comparable<Vertex<T>>
 {
 	T key;
 	Integer value;
@@ -20,27 +19,8 @@ class Vertex<T> implements Comparable
 	}
 
 	@Override
-	public int compareTo(Object v)
-	{
-		try {
-			if (v instanceof Vertex<?>)
-			{
-				if (this.value == null)
-				{
-					return 1;
-				}
-				else if (((Vertex<T>) v).value == null)
-				{
-					return -1;
-				}
-				return this.value - ((Vertex<T>) v).value;
-			}
-			return 1;
-		}
-		catch (Exception e)
-		{
-			return 1;
-		}
+	public int compareTo(Vertex<T> v) {
+		return this.value - v.value;
 	}
 }
 
@@ -348,14 +328,41 @@ public class Graph<T extends Comparable<T>>
 		return traversal;
 	}
 	
+	// This method finds the paths of shortest weight from a start vertex to every other vertex
+	// in the graph. This method returns a HashMap that associates each vertex with the vertex that
+	// leads to it in the path of shortest weight. For example,
+	// if the shortest weighted path from vertex A to vertex D is A->B->C->D, then
+	// prevVertex.get(D) == C, prevVertex.get(C) == B, and prevVertex.get(B) == A.
 	public HashMap<T, T> runDijkstra(T start)
 	{
+		// oo represents infinity.
 		int oo = (int)1e9;
+		int count = 0;
+		
+		// The vertices ArrayList simply contains each vertex in the graph.
 		ArrayList<T> vertices = this.getVertices();
+		
+		// The dist HashMap associates each vertex with the shortest distance known
+		// between the start vertex and it.
 		HashMap<T, Integer> dist = new HashMap<T, Integer>();
+		
+		// The prevVertex HashMap will associate each vertex with the previous vertex 
+		// in the shortest weighted path from the start vertex and it.
+		
+		// This is what the method will return.
 		HashMap<T, T> prevVertex = new HashMap<T, T>();
+		
+		// The visited HashSet keeps track of which vertices have been visited so far
+		// as the algorithm executes.
 		HashSet<T> visited = new HashSet<T>();
+		
+		// This priority queue is used to determine the next vertex to visit in each step
+		// of the algorithm. It uses the auxiliary class "Vertex" to associate each vertex with
+		// the shortest known distance from 'start' to that vertex.
 		PriorityQueue<Vertex<T>> q = new PriorityQueue<Vertex<T>>();
+		
+		if (!this.containsVertex(start))
+			return prevVertex;
 		
 		for (T vertex : vertices)
 		{
@@ -365,26 +372,25 @@ public class Graph<T extends Comparable<T>>
 		
 		q.add(new Vertex<T>(start, 0));
 		
-		while (!q.isEmpty())
+		while (!q.isEmpty() && count < this.getSize())
 		{
 			Vertex<T> vertex = q.remove();
-			System.out.println ("Just pulled " + vertex.key + " from the queue.");
 			if (visited.contains(vertex.key))
 				continue;
 			
-			System.out.println("It is not already visited.");
-			
 			visited.add(vertex.key);
+			count++;
 			
 			HashMap<T, Integer> edgeMap = this.getEdgeMap(vertex.key);
 			for (Entry<T, Integer> edge : edgeMap.entrySet())
 			{
-				System.out.println("\tLooking at the edge to " + edge.getKey());
-				System.out.println("\tEdge weight = " + edge.getValue() + ", Vertex value = " + vertex.value);
+				// pathWeight is the distance from the current vertex to the vertex
+				// incident to the current edge. If this is lower than the dist value for
+				// the vertex incident to the current edge, we update dist.
 				int pathWeight = edge.getValue() + vertex.value;
 				if (!visited.contains(edge.getKey()))
 				{
-					if (dist.get(edge.getKey()) != null && pathWeight < dist.get(edge.getKey()))
+					if (pathWeight < dist.get(edge.getKey()))
 					{
 						dist.put(edge.getKey(), pathWeight);
 						prevVertex.put(edge.getKey(), vertex.key);
@@ -395,6 +401,52 @@ public class Graph<T extends Comparable<T>>
 		}
 		
 		return prevVertex;
+	}
+	
+	// This method takes two vertices in a graph ('start' and 'end')
+	// and finds the shortest weighted path from 'start' to 'end'.
+	// This path is returned as a LinkedList. If there is no valid
+	// path from 'start' to 'end' (or if either vertex does not exist),
+	// this method returns null.
+	public LinkedList<T> findShortestWeightedPath(T start, T end)
+	{
+		HashMap<T, T> prevVertexMap;
+		T currVertex;
+		LinkedList<T> path = new LinkedList<T>();
+		
+		if (!this.containsVertex(start) || !this.containsVertex(end))
+		{
+			return null;
+		}
+		else if (start.compareTo(end) == 0)
+		{
+			// If 'start' and 'end' are equal, the path is just 'start'.
+			path.add(start);
+			return path;
+		}
+		
+		prevVertexMap = runDijkstra(start);
+		currVertex = end;
+		
+		if (!prevVertexMap.containsKey(currVertex))
+		{
+			// If the 'end' vertex is not in the map, then there is no path from
+			// 'start' to 'end'.
+			return null;
+		}
+		
+		while (prevVertexMap.containsKey(currVertex))
+		{
+			// Since we are finding each vertex in the path from 'end' to 'start',
+			// we use head insertion so that the LinkedList we return goes from
+			// 'start' to 'end'.
+			path.add(0, currVertex);
+			currVertex = prevVertexMap.get(currVertex);
+		}
+		
+		path.add(0, currVertex);
+		
+		return path;
 	}
 	
 	// This method generates a random integer between 'min' and 'max', inclusive.
@@ -499,15 +551,16 @@ public class Graph<T extends Comparable<T>>
 	
 	public static void main(String [] args)
 	{
-		Graph<Integer> g = Graph.randomDirectedGraph(10, 0.25, 1, 10);
+		Graph<Integer> g = Graph.randomDirectedGraph(100, 0.05, 1, 10);
 		
 		g.print();
 		
-		HashMap<Integer, Integer> dijkstra = g.runDijkstra(0);
+		LinkedList<Integer> path = g.findShortestWeightedPath(0, 3);
 		
-		for (Entry<Integer, Integer> pair : dijkstra.entrySet())
-		{
-			System.out.println(pair.getValue() + " -> " + pair.getKey());
-		}
+		if (path != null)
+			for (Integer i : path)
+			{
+				System.out.print(i + " ");
+			}
 	}
 }
