@@ -1,7 +1,4 @@
-# Graphs
-Experimenting with Graphs for my Computer Science Class
-
-## About this Project
+# graphs
 
 This project simply implements a graph data structure using Java. 
 It includes methods for insertion and deletion of vertices and edges, as well as algorithms such as topological sorts and Dijkstra's algorithm.
